@@ -166,3 +166,52 @@ class VehicleManager:
         """
         # Return first N vehicle numbers from the index
         return list(self.vehicle_index.keys())[:count]
+
+    @staticmethod
+    def get_emission_grade(co2_per_km: float) -> str:
+        """
+        Return emission grade A/B/C/D based on CO2 g/km.
+        A: < 120 g/km (Excellent)
+        B: 120-160 g/km (Good)
+        C: 160-200 g/km (Fair)
+        D: > 200 g/km (Poor)
+        """
+        if co2_per_km < 120:
+            return "A"
+        elif co2_per_km < 160:
+            return "B"
+        elif co2_per_km < 200:
+            return "C"
+        else:
+            return "D"
+
+    def get_greener_alternatives(self, vehicle_no: str, limit: int = 3) -> list:
+        """
+        Find vehicles of the same class with lower CO2 emissions.
+        Returns top `limit` alternatives sorted by CO2 ascending.
+        """
+        current = self.get_vehicle(vehicle_no)
+        if not current:
+            return []
+
+        current_co2 = float(current.get("co2_emissions", 9999))
+        current_type = current.get("type", "")
+
+        alternatives = []
+        for key, v in self.vehicle_index.items():
+            if key == vehicle_no.strip().upper():
+                continue
+            if v.get("type") != current_type:
+                continue
+            alt_co2 = float(v.get("co2_emissions", 9999))
+            if alt_co2 < current_co2:
+                savings_pct = round((current_co2 - alt_co2) / current_co2 * 100, 1)
+                alternatives.append({
+                    "vehicle_no": v["vehicle_no"],
+                    "co2_per_km": alt_co2,
+                    "emission_grade": self.get_emission_grade(alt_co2),
+                    "savings_percent": savings_pct
+                })
+
+        alternatives.sort(key=lambda x: x["co2_per_km"])
+        return alternatives[:limit]

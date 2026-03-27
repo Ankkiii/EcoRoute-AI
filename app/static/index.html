@@ -7,36 +7,52 @@
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="alternate icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/home.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <span class="nav-icon">🌱</span>
-                <span class="nav-title">EcoRoute AI</span>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="/" class="nav-link active">Home</a></li>
-                <li><a href="/model-info" class="nav-link">Model Info</a></li>
-            </ul>
-        </div>
-    </nav>
+    <div id="navbar"></div>
 
     <main class="container">
         <section class="input-section">
-            <h2>Plan Your Eco-Friendly Route</h2>
+            <h2>🗺️ Route Planner</h2>
+            <p class="section-subtitle">Enter your vehicle and journey details to get eco-friendly route recommendations with CO₂ predictions.</p>
             <form id="routeForm">
                 <div class="form-group">
                     <label for="vehicle_no">Vehicle Make & Model</label>
-                    <input 
-                        type="text" 
-                        id="vehicle_no" 
-                        name="vehicle_no" 
-                        placeholder="e.g., BMW 320i, Honda Civic, Toyota Camry" 
-                        required
-                        autocomplete="off"
-                    >
-                    <small class="help-text">Enter vehicle make and model from Canada dataset</small>
+                    <div class="autocomplete-wrapper">
+                        <input 
+                            type="text" 
+                            id="vehicle_no" 
+                            name="vehicle_no" 
+                            placeholder="e.g., BMW 320i, Honda Civic, Toyota Camry" 
+                            required
+                            autocomplete="off"
+                        >
+                        <ul id="vehicleSuggestions" class="autocomplete-dropdown" style="display:none;"></ul>
+                    </div>
+                    <small class="help-text">Enter vehicle make and model</small>
+                    <div id="popularVehicles" class="popular-chips"></div>
+                </div>
+
+                <div class="form-group compare-toggle-group">
+                    <button type="button" id="compareToggle" class="btn-compare-toggle">
+                        <span id="compareToggleIcon">＋</span> Compare with another vehicle
+                    </button>
+                </div>
+
+                <div class="form-group" id="compareVehicleGroup" style="display:none;">
+                    <label for="vehicle_no_2">Second Vehicle Make & Model</label>
+                    <div class="autocomplete-wrapper">
+                        <input 
+                            type="text" 
+                            id="vehicle_no_2" 
+                            name="vehicle_no_2" 
+                            placeholder="e.g., Toyota Camry, Ford Mustang" 
+                            autocomplete="off"
+                        >
+                        <ul id="vehicleSuggestions2" class="autocomplete-dropdown" style="display:none;"></ul>
+                    </div>
+                    <small class="help-text">Compare emissions side-by-side</small>
                 </div>
 
                 <div class="form-group">
@@ -65,6 +81,20 @@
                     <small class="help-text">Where you want to go</small>
                 </div>
 
+                <div class="form-group">
+                    <label for="fuel_price">Fuel Price per Litre <span class="optional-label">(₹, optional)</span></label>
+                    <input 
+                        type="number" 
+                        id="fuel_price" 
+                        name="fuel_price" 
+                        placeholder="e.g., 100" 
+                        min="0.01"
+                        step="0.01"
+                        autocomplete="off"
+                    >
+                    <small class="help-text">Enter fuel price in ₹ to see estimated cost per route</small>
+                </div>
+
                 <button type="submit" class="btn-primary">
                     <span class="btn-text">Find Eco-Routes</span>
                     <span class="spinner" style="display: none;"></span>
@@ -79,115 +109,67 @@
             </div>
         </section>
 
+        <section id="compareSection" class="compare-section" style="display: none;">
+            <h2>Vehicle Comparison</h2>
+            <div id="compareGrid" class="compare-grid"></div>
+        </section>
+
+        <!-- Chart always outside resultsSection so it works in both modes -->
+        <div class="chart-container" id="chartContainer" style="display:none;">
+            <h3 class="chart-title">📊 Emission Comparison</h3>
+            <canvas id="emissionChart"></canvas>
+        </div>
+
         <section id="resultsSection" class="results-section" style="display: none;">
             <h2>Route Recommendations</h2>
             
-            <div class="savings-summary" id="savingsSummary">
-                <!-- Emission savings will be displayed here -->
-            </div>
+            <div id="emissionGradeBanner" style="display:none;"></div>
 
-            <div class="map-container">
-                <div id="map"></div>
-            </div>
+            <div class="savings-summary" id="savingsSummary"></div>
 
             <div class="recommended-route-container">
                 <h3>🏆 Recommended Route (Lowest Emissions)</h3>
-                <div id="recommendedRoute" class="route-card recommended">
-                    <!-- Recommended route details will be displayed here -->
-                </div>
+                <div id="recommendedRoute" class="route-card recommended"></div>
             </div>
 
             <div class="alternative-routes-container" id="alternativeRoutesContainer" style="display: none;">
                 <h3>Alternative Routes</h3>
-                <div id="alternativeRoutes" class="routes-grid">
-                    <!-- Alternative routes will be displayed here -->
-                </div>
+                <div id="alternativeRoutes" class="routes-grid"></div>
+            </div>
+
+            <div id="greenAlternatives" class="green-alternatives" style="display:none;"></div>
+        </section>
+
+        <!-- Map is outside resultsSection so it initializes properly when hidden -->
+        <section id="mapSection" class="map-section" style="display:none;">
+            <div class="map-container">
+                <div id="map"></div>
             </div>
         </section>
+        <!-- Model info hint -->
+        <div class="model-info-hint">
+            🤖 Curious about the ML model powering predictions? <a href="/model-info" class="hint-link">Go to Model Info →</a>
+        </div>
+
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="/docs" class="footer-link" target="_blank">📚 API Documentation</a>
-                    <a href="/health" class="footer-link" target="_blank">🏥 Health Check</a>
-                </div>
-                <div class="footer-status" id="systemStatus">
-                    <span class="status-dot" id="statusDot"></span>
-                    <span id="statusText">Checking system status...</span>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div id="footer"></div>
 
+    <div id="footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/layout.js"></script>
     <script src="/static/app.js"></script>
-    <!-- Google Maps API key will be injected by backend -->
     <script>
-        // Debug: Log when script starts
-        console.log('[DEBUG] Page script started');
-        
-        // Check system health on page load
-        async function checkSystemHealth() {
-            try {
-                console.log('[DEBUG] Checking system health...');
-                const response = await fetch('/health');
-                const data = await response.json();
-                console.log('[DEBUG] Health check response:', data);
-                
-                const statusDot = document.getElementById('statusDot');
-                const statusText = document.getElementById('statusText');
-                
-                if (statusDot && statusText) {
-                    if (data.status === 'healthy') {
-                        statusDot.classList.remove('error');
-                        statusText.textContent = 'All Systems Operational';
-                        console.log('[DEBUG] System status: Healthy');
-                    } else {
-                        statusDot.classList.add('error');
-                        statusText.textContent = 'System Issues Detected';
-                        console.log('[DEBUG] System status: Unhealthy');
-                    }
-                }
-            } catch (error) {
-                console.error('[DEBUG] Health check failed:', error);
-                const statusDot = document.getElementById('statusDot');
-                const statusText = document.getElementById('statusText');
-                if (statusDot && statusText) {
-                    statusDot.classList.add('error');
-                    statusText.textContent = 'Unable to Check Status';
-                }
-            }
-        }
-        
-        // Check health on page load
-        checkSystemHealth();
-        
-        // Fetch API key from backend and load Google Maps
-        console.log('[DEBUG] Fetching Maps API key...');
         fetch('/api/maps-config')
-            .then(response => {
-                console.log('[DEBUG] Maps config response received');
-                return response.json();
-            })
+            .then(r => r.json())
             .then(data => {
-                console.log('[DEBUG] API Key received:', data.api_key ? 'Yes (length: ' + data.api_key.length + ')' : 'No');
                 const script = document.createElement('script');
                 script.src = `https://maps.googleapis.com/maps/api/js?key=${data.api_key}&callback=initMap`;
-                script.async = true;
-                script.defer = true;
-                script.onload = function() {
-                    console.log('[DEBUG] Google Maps script loaded successfully');
-                };
-                script.onerror = function() {
-                    console.error('[DEBUG] Failed to load Google Maps script');
-                };
-                console.log('[DEBUG] Appending Maps script to body');
+                script.async = true; script.defer = true;
                 document.body.appendChild(script);
             })
-            .catch(error => {
-                console.error('[DEBUG] Failed to load Google Maps API key:', error);
-            });
+            .catch(e => console.error('Maps API key load failed:', e));
     </script>
 </body>
 </html>

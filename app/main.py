@@ -97,7 +97,7 @@ async def add_security_headers(request: Request, call_next):
         "font-src 'self' https://fonts.gstatic.com; "
         "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://cdn.jsdelivr.net; "
         "img-src 'self' data: https://*.googleapis.com https://*.gstatic.com https://fastapi.tiangolo.com; "
-        "connect-src 'self' https://maps.googleapis.com"
+        "connect-src 'self' https://maps.googleapis.com https://cdn.jsdelivr.net"
     )
     response.headers["Content-Security-Policy"] = csp
     
@@ -418,12 +418,10 @@ def predict_emission(vehicle, distance_km, traffic_level):
 # -----------------------------
 @app.get("/", include_in_schema=False)
 def home():
-    """
-    Serve the frontend UI.
-    
-    Returns the main HTML page for the web interface.
-    This endpoint is excluded from API documentation.
-    """
+    return FileResponse("app/static/home.html")
+
+@app.get("/route-planner", include_in_schema=False)
+def route_planner():
     return FileResponse("app/static/index.html")
 
 
@@ -651,6 +649,117 @@ def health_check(request: Request):
         )
     
     return health_status
+
+
+# -----------------------------
+# GREENER ALTERNATIVES
+# -----------------------------
+@app.get(
+    "/vehicles/greener-alternatives",
+    response_model=dict,
+    summary="Get Greener Vehicle Alternatives",
+    description="Find vehicles of the same class with lower CO2 emissions",
+    tags=["Vehicles"]
+)
+@limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_period}seconds")
+def greener_alternatives(vehicle_no: str, request: Request, limit: int = 3):
+    """
+    Return up to `limit` vehicles of the same class with lower CO2 g/km.
+    Includes savings percentage vs the current vehicle.
+    """
+    vehicle = vehicle_manager.get_vehicle(vehicle_no)
+    if not vehicle:
+        raise HTTPException(status_code=404, detail=f"Vehicle '{vehicle_no}' not found.")
+
+    co2_per_km = float(vehicle.get("co2_emissions", 200))
+    alternatives = vehicle_manager.get_greener_alternatives(vehicle_no, limit)
+
+    return {
+        "current_vehicle": vehicle_no.upper(),
+        "current_co2_per_km": co2_per_km,
+        "current_emission_grade": VehicleManager.get_emission_grade(co2_per_km),
+        "alternatives": alternatives
+    }
+
+
+# -----------------------------
+# VEHICLE SEARCH (AUTOCOMPLETE)
+# -----------------------------
+@app.get(
+    "/vehicles/search",
+    response_model=dict,
+    summary="Search Vehicles",
+    description="Search for vehicles by make/model (autocomplete)",
+    tags=["Vehicles"]
+)
+@limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_period}seconds")
+def search_vehicles(q: str, request: Request):
+    """
+    Search for vehicles matching a query string.
+
+    Returns up to 10 matching vehicle names for autocomplete.
+    Requires at least 2 characters.
+
+    **Query Parameters:**
+    - **q** (string, required): Search query (min 2 characters)
+
+    **Returns:**
+    - **results**: List of matching vehicle name strings (max 10)
+    """
+    if len(q.strip()) < 2:
+        return {"results": []}
+
+    query_upper = q.strip().upper()
+    matches = [
+        key for key in vehicle_manager.vehicle_index
+        if query_upper in key
+    ]
+    return {"results": matches[:10]}
+
+
+# -----------------------------
+# POPULAR VEHICLES
+# -----------------------------
+@app.get(
+    "/vehicles/popular",
+    response_model=dict,
+    summary="Get Popular Vehicles",
+    description="Return a curated list of 20 popular vehicles",
+    tags=["Vehicles"]
+)
+@limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_period}seconds")
+def popular_vehicles(request: Request):
+    """
+    Return a curated list of 20 popular vehicles from the dataset.
+
+    **Returns:**
+    - **vehicles**: List of popular vehicle name strings
+    """
+    popular = [
+        "Toyota Camry",
+        "Honda Accord Sedan",
+        "Ford Mustang",
+        "BMW 320i",
+        "BMW 530i xDrive",
+        "Volkswagen Jetta",
+        "Hyundai Elantra GT",
+        "Nissan Altima",
+        "Audi A4 quattro",
+        "Subaru Outback AWD",
+        "Lexus RX 350 AWD",
+        "Chevrolet Camaro",
+        "Ford Edge",
+        "Honda CR-V AWD",
+        "Toyota RAV4 AWD",
+        "Toyota Highlander AWD",
+        "Honda Pilot AWD",
+        "Ford Explorer AWD",
+        "Nissan Rogue AWD",
+        "Hyundai Tucson AWD",
+    ]
+    # Filter to only include vehicles that exist in the loaded index
+    available = [v for v in popular if vehicle_manager.vehicle_exists(v)]
+    return {"vehicles": available}
 
 
 # -----------------------------
@@ -1180,13 +1289,22 @@ def eco_route(data: RouteRequest, request: Request):
         if not summary:
             summary = f"Route {idx + 1}"
 
+        # Calculate fuel cost if price provided
+        fuel_cost = None
+        if data.fuel_price_per_litre is not None:
+            mileage = float(vehicle.get("mileage", 1))
+            if mileage > 0:
+                fuel_cost = round((distance_km / mileage) * data.fuel_price_per_litre, 2)
+
         route_results.append({
             "route_number": idx + 1,
             "distance_km": round(distance_km, 2),
             "duration_minutes": round(duration_seconds / 60, 2),
             "traffic_level": traffic_label,
             "predicted_co2_kg": predicted_co2,
-            "summary": summary
+            "summary": summary,
+            "fuel_cost_estimate": fuel_cost,
+            "carbon_cost_inr": round(predicted_co2 * settings.carbon_tax_rate_per_kg, 2)
         })
 
     # Select lowest emission route
@@ -1205,13 +1323,33 @@ def eco_route(data: RouteRequest, request: Request):
     else:
         emission_savings_percent = 0.0
 
+    # Add eco_score to all routes
+    route_results = TrafficAnalyzer.calculate_eco_score(route_results)
+    # Re-fetch best_route after eco_score added
+    best_route = min(route_results, key=lambda x: x["predicted_co2_kg"])
+
+    # Emission grade for the vehicle
+    co2_per_km = float(vehicle.get("co2_emissions", 200))
+    emission_grade = VehicleManager.get_emission_grade(co2_per_km)
+
+    # Calculate CO2 equivalents for the recommended route
+    rec_co2 = best_route["predicted_co2_kg"]
+    co2_equivalents = {
+        "trees_to_offset": round(rec_co2 / 21, 2),
+        "phone_charges": round(rec_co2 / 0.008, 1),
+        "km_in_avg_car": round(rec_co2 / 0.21, 1)
+    }
+
     return {
         "source": data.source,
         "destination": data.destination,
         "vehicle_no": data.vehicle_no,
+        "emission_grade": emission_grade,
+        "co2_per_km": co2_per_km,
         "recommended_route": best_route,
         "all_routes": route_results,
         "selection_criteria": "Minimum CO2 Emission (ML Predicted)",
         "emission_savings_kg": round(emission_savings_kg, 2),
-        "emission_savings_percent": emission_savings_percent
+        "emission_savings_percent": emission_savings_percent,
+        "co2_equivalents": co2_equivalents
     }

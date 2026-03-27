@@ -10,18 +10,7 @@
     <link rel="stylesheet" href="/static/model-info.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <span class="nav-icon">🌱</span>
-                <span class="nav-title">EcoRoute AI</span>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="/" class="nav-link">Home</a></li>
-                <li><a href="/model-info" class="nav-link active">Model Info</a></li>
-            </ul>
-        </div>
-    </nav>
+    <div id="navbar"></div>
 
     <main class="container">
         <!-- Model Overview -->
@@ -562,79 +551,28 @@
         <div class="modal-caption" id="modalCaption"></div>
     </div>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="/docs" class="footer-link" target="_blank">📚 API Documentation</a>
-                    <a href="/health" class="footer-link" target="_blank">🏥 Health Check</a>
-                </div>
-                <div class="footer-status" id="systemStatus">
-                    <span class="status-dot" id="statusDot"></span>
-                    <span id="statusText">Checking system status...</span>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div id="footer"></div>
 
+    <script src="/static/layout.js"></script>
     <script>
-        // Set current year dynamically
         document.getElementById('currentYear').textContent = new Date().getFullYear();
-        
-        // Check system health on page load
-        async function checkSystemHealth() {
-            try {
-                const response = await fetch('/health');
-                const data = await response.json();
-                
-                const statusDot = document.getElementById('statusDot');
-                const statusText = document.getElementById('statusText');
-                
-                if (data.status === 'healthy') {
-                    statusDot.classList.remove('error');
-                    statusText.textContent = 'All Systems Operational';
-                } else {
-                    statusDot.classList.add('error');
-                    statusText.textContent = 'System Issues Detected';
-                }
-            } catch (error) {
-                const statusDot = document.getElementById('statusDot');
-                const statusText = document.getElementById('statusText');
-                statusDot.classList.add('error');
-                statusText.textContent = 'Unable to Check Status';
-            }
-        }
-        
-        // Check health on page load
-        checkSystemHealth();
-        
+
         function openModal(img) {
             const modal = document.getElementById('imageModal');
             const modalImg = document.getElementById('modalImage');
             const caption = document.getElementById('modalCaption');
-            
             modal.style.display = 'block';
             modalImg.src = img.src;
             caption.innerHTML = img.alt;
-            
-            // Prevent body scroll when modal is open
             document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
-            const modal = document.getElementById('imageModal');
-            modal.style.display = 'none';
-            
-            // Restore body scroll
+            document.getElementById('imageModal').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
 
-        // Close modal on Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-            }
-        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
 </body>
 </html>

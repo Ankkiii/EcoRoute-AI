@@ -95,6 +95,12 @@ class Settings(BaseSettings):
         default="development",
         description="Environment (development or production)"
     )
+
+    # Carbon Tax
+    carbon_tax_rate_per_kg: float = Field(
+        default=1.0,
+        description="Carbon tax rate in INR per kg CO2 (default ₹1/kg = ₹1000/tonne)"
+    )
     
     model_config = SettingsConfigDict(
         env_file=".env",

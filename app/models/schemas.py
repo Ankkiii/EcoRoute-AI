@@ -130,6 +130,12 @@ class RouteRequest(BaseModel):
         description="Destination location (city, state, or full address)",
         examples=["Pune, Maharashtra", "Agra, Uttar Pradesh", "Chennai, Tamil Nadu"]
     )
+    fuel_price_per_litre: Optional[float] = Field(
+        default=None,
+        gt=0,
+        description="Optional fuel price per litre for cost estimation",
+        examples=[1.50, 2.10]
+    )
     
     @field_validator('vehicle_no')
     @classmethod
@@ -285,6 +291,7 @@ class RouteInfo(BaseModel):
     traffic_level: str = Field(..., description="Traffic level (Low, Medium, or High)")
     predicted_co2_kg: float = Field(..., description="Predicted CO₂ emission in kilograms")
     summary: str = Field(..., description="Route description or highway name")
+    fuel_cost_estimate: Optional[float] = Field(default=None, description="Estimated fuel cost in the provided currency")
 
 
 class EcoRouteResponse(BaseModel):

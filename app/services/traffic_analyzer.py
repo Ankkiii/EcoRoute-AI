@@ -91,3 +91,38 @@ class TrafficAnalyzer:
             TrafficAnalyzer.TRAFFIC_HIGH: "High"
         }
         return labels.get(traffic_level, "Unknown")
+
+
+    @staticmethod
+    def calculate_eco_score(routes: list) -> list:
+        """
+        Calculate composite Eco-Score (0-100) for each route.
+        Higher = more eco-friendly.
+
+        Weights:
+          50% CO2 (lower is better)
+          30% distance (shorter is better)
+          20% traffic level (lower is better)
+
+        Returns the same list with 'eco_score' added to each route dict.
+        """
+        if not routes:
+            return routes
+
+        co2_values = [r["predicted_co2_kg"] for r in routes]
+        dist_values = [r["distance_km"] for r in routes]
+
+        min_co2, max_co2 = min(co2_values), max(co2_values)
+        min_dist, max_dist = min(dist_values), max(dist_values)
+
+        traffic_map = {"Low": 0.0, "Medium": 0.5, "High": 1.0}
+
+        for r in routes:
+            co2_norm = (r["predicted_co2_kg"] - min_co2) / (max_co2 - min_co2) if max_co2 != min_co2 else 0
+            dist_norm = (r["distance_km"] - min_dist) / (max_dist - min_dist) if max_dist != min_dist else 0
+            traffic_norm = traffic_map.get(r.get("traffic_level", "Medium"), 0.5)
+
+            penalty = 0.50 * co2_norm + 0.30 * dist_norm + 0.20 * traffic_norm
+            r["eco_score"] = round((1 - penalty) * 100)
+
+        return routes

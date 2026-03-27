@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoRoute AI - Home</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/home.css">
+</head>
+<body>
+    <div id="navbar"></div>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">🌍 AI-Powered Eco Routing</div>
+                <h1>Drive Smarter.<br>Emit Less.</h1>
+                <p class="hero-sub">EcoRoute AI predicts CO₂ emissions for every route alternative using machine learning — something Google Maps doesn't do. Pick the greenest path, not just the fastest.</p>
+                <div class="hero-actions">
+                    <a href="/route-planner" class="btn-hero-primary">🗺️ Try Route Planner</a>
+                    <a href="/model-info" class="btn-hero-secondary">📊 View Model Info</a>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card"><span class="stat-num">40K+</span><span class="stat-label">Vehicles in Dataset</span></div>
+                <div class="stat-card"><span class="stat-num">R² 0.92+</span><span class="stat-label">Model Accuracy</span></div>
+                <div class="stat-card"><span class="stat-num">5</span><span class="stat-label">ML Models Trained</span></div>
+                <div class="stat-card"><span class="stat-num">Real-time</span><span class="stat-label">Traffic Analysis</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHAT MAKES US DIFFERENT -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Why EcoRoute AI?</h2>
+            <p class="section-desc">Google Maps shows you the fastest route. We show you the <strong>greenest</strong> one — with real numbers.</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🤖</span>
+                    <h3>ML-Powered CO₂ Prediction</h3>
+                    <p>A stacking ensemble model (LightGBM + XGBoost + CatBoost) predicts exact CO₂ emissions in kg for your specific vehicle on each route — not a generic estimate.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🏷️</span>
+                    <h3>Vehicle Emission Grade</h3>
+                    <p>Every vehicle gets an A–D grade based on its CO₂ g/km from the Canada fuel consumption dataset. Know how clean your car really is before you drive.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <h3>Eco-Score per Route</h3>
+                    <p>A composite 0–100 score combining CO₂ (50%), distance (30%), and traffic level (20%). One number to compare all routes instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🌍</span>
+                    <h3>Environmental Cost in ₹</h3>
+                    <p>CO₂ emissions translated to Indian carbon tax cost (₹1/kg). See the real monetary environmental impact of each route choice.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🌿</span>
+                    <h3>Greener Vehicle Suggestions</h3>
+                    <p>After every search, we suggest vehicles from the same class with lower emissions — helping you make a better long-term choice.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">⚖️</span>
+                    <h3>Vehicle Comparison Mode</h3>
+                    <p>Compare two vehicles on the same route side-by-side. See exactly which car produces fewer emissions for your specific journey.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW METRICS WORK -->
+    <section class="section section-dark">
+        <div class="container">
+            <h2 class="section-title">Understanding Your Results</h2>
+            <p class="section-desc">We show you 4 simple metrics to help you pick the greenest route</p>
+            <div class="metrics-grid-2x2">
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-icon">🏷️</span>
+                        <h3>Emission Grade</h3>
+                    </div>
+                    <p>Your vehicle gets a simple letter grade (A, B, C, or D) based on how clean it is. Think of it like a report card for your car's emissions.</p>
+                    <div class="grade-table">
+                        <div class="grade-row"><span class="grade-pill" style="background:#10b981">A</span><span>Very Clean — Excellent choice</span></div>
+                        <div class="grade-row"><span class="grade-pill" style="background:#84cc16">B</span><span>Pretty Clean — Good choice</span></div>
+                        <div class="grade-row"><span class="grade-pill" style="background:#f59e0b">C</span><span>Average — Could be better</span></div>
+                        <div class="grade-row"><span class="grade-pill" style="background:#ef4444">D</span><span>High Emissions — Not ideal</span></div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-icon">📊</span>
+                        <h3>Eco-Score</h3>
+                    </div>
+                    <p>A simple 0-100 score for each route. Higher is better. We look at three things:</p>
+                    <ul class="simple-list">
+                        <li><strong>CO₂ emissions</strong> (most important — 50%)</li>
+                        <li><strong>Distance</strong> (30%)</li>
+                        <li><strong>Traffic</strong> (20%)</li>
+                    </ul>
+                    <div class="score-guide">
+                        <span class="score-badge green">80-100 Excellent</span>
+                        <span class="score-badge yellow">60-79 Good</span>
+                        <span class="score-badge orange">40-59 Fair</span>
+                        <span class="score-badge red">0-39 Poor</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-icon">🌍</span>
+                        <h3>Environmental Cost</h3>
+                    </div>
+                    <p>This shows the real money value of the pollution your trip creates. In India, every kg of CO₂ costs about ₹1 in environmental damage.</p>
+                    <div class="cost-example">
+                        <div class="example-row">
+                            <span>If your trip produces 5 kg CO₂</span>
+                            <span class="example-value">= ₹5 environmental cost</span>
+                        </div>
+                        <div class="example-row">
+                            <span>If your trip produces 15 kg CO₂</span>
+                            <span class="example-value">= ₹15 environmental cost</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-icon">🌳</span>
+                        <h3>Real-World Comparisons</h3>
+                    </div>
+                    <p>We translate your CO₂ into things you can actually picture:</p>
+                    <div class="equiv-simple">
+                        <div class="equiv-item">
+                            <span class="equiv-emoji">🌳</span>
+                            <div>
+                                <strong>Trees needed</strong>
+                                <span>How many trees it takes to absorb this CO₂ in a year</span>
+                            </div>
+                        </div>
+                        <div class="equiv-item">
+                            <span class="equiv-emoji">🔋</span>
+                            <div>
+                                <strong>Phone charges</strong>
+                                <span>Same CO₂ as charging your phone this many times</span>
+                            </div>
+                        </div>
+                        <div class="equiv-item">
+                            <span class="equiv-emoji">🚗</span>
+                            <div>
+                                <strong>Driving distance</strong>
+                                <span>How far an average car would drive to emit this much</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section cta-section">
+        <div class="container">
+            <h2>Ready to find your greenest route?</h2>
+            <p>Enter your vehicle and destination — get CO₂ predictions, eco-scores, and greener alternatives in seconds.</p>
+            <div class="cta-actions">
+                <a href="/route-planner" class="btn-hero-primary">🗺️ Open Route Planner</a>
+                <a href="/model-info" class="btn-hero-secondary">📈 Explore the ML Model</a>
+            </div>
+        </div>
+    </section>
+
+    <div id="footer"></div>
+    <script src="/static/layout.js"></script>
+</body>
+</html>
