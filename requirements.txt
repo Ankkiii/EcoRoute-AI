@@ -10,23 +10,23 @@ uvicorn[standard]==0.27.0
 gunicorn==21.2.0
 
 # Data Processing
-pandas==2.1.4
-numpy==1.26.3
+pandas>=2.2.0
+numpy>=1.26.0
 
 # Machine Learning - Core
-scikit-learn==1.4.0
+scikit-learn>=1.4.0
 
 # Machine Learning - Advanced Models
-xgboost==2.0.3
-lightgbm==4.3.0
-catboost==1.2.2
+xgboost>=2.0.0
+lightgbm>=4.3.0
+catboost>=1.2.0
 
 # Model Explainability
-shap==0.44.1
+shap>=0.44.0
 
 # Visualization (for model evaluation)
-matplotlib==3.8.2
-seaborn==0.13.1
+matplotlib>=3.8.0
+seaborn>=0.13.0
 
 # HTTP Requests
 requests==2.31.0
