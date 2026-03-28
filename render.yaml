@@ -7,9 +7,13 @@ services:
   - type: web
     name: ecoroute-api
     env: python
+    runtime: python
     region: oregon  # Choose region closest to your users: oregon, frankfurt, singapore, ohio
     plan: free  # Options: free, starter, standard, pro, pro plus, pro max, pro ultra
     branch: main  # Git branch to deploy
+    
+    # Python Version
+    pythonVersion: "3.11.9"
     
     # Build Configuration
     buildCommand: pip install -r requirements.txt

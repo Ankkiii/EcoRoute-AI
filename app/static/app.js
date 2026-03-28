@@ -561,6 +561,17 @@ function buildCompareCard(vehicleNo, route, isWinner) {
     const carbonHtml = route.carbon_cost_inr != null
         ? `<div class="compare-stat"><span class="compare-label">Environmental Cost</span><span class="compare-value" style="color:#a78bfa">🌍 ₹${route.carbon_cost_inr.toFixed(2)}</span></div>`
         : '';
+    
+    // Calculate CO2 equivalents for comparison
+    const co2 = route.predicted_co2_kg;
+    const equivalentsHtml = `
+        <div class="co2-equivalents" style="margin-top:.75rem">
+            <span class="equiv-item">🌳 ${(co2 / 21).toFixed(2)} trees/yr to offset</span>
+            <span class="equiv-item">🔋 ${(co2 / 0.008).toLocaleString()} phone charges</span>
+            <span class="equiv-item">🚗 ${(co2 / 0.21).toFixed(1)} km in avg car</span>
+        </div>
+    `;
+    
     return `
         <div class="compare-card ${isWinner ? 'compare-winner' : ''}">
             <div class="compare-card-header">
@@ -585,6 +596,7 @@ function buildCompareCard(vehicleNo, route, isWinner) {
             </div>
             ${carbonHtml}
             ${ecoScoreHtml}
+            ${equivalentsHtml}
         </div>
     `;
 }
